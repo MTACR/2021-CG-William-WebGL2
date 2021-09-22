@@ -1,59 +1,17 @@
-function Model(gl, meshProgramInfo, s) {
-    this.rotation = {
-        X: 20,
-        Y: 40,
-        Z: 0
-    };
-
-    this.position = {
-        X: 0,
-        Y: 0,
-        Z: 0
-    };
-
-    this.scale = {
-        X: 1,
-        Y: 1,
-        Z: 1
-    }
-
-    this.uniforms = {
-        u_colorMult: [Math.random(), Math.random(), Math.random(), 1],
-        u_matrix: m4.identity()
-    };
-
-    this.buffer = s === 0? flattenedPrimitives.createCubeBufferInfo(gl, 20)
-                : s === 1? flattenedPrimitives.createTruncatedConeBufferInfo(gl, 10, 0, 20, 12, 1, true, false)
-                : s === 2? flattenedPrimitives.createSphereBufferInfo(gl, 10, 12, 6) : null;
-
-    this.VAO = twgl.createVAOFromBufferInfo(gl, meshProgramInfo, this.buffer);
-
-    this.animations = {
-        rotate: null,
-        color: null
-    };
-
-    this.speed = 1;
-}
-
-
-const objs = [];
-const cams = [];
-
 const controlsModel = {
-    Add: function (gl, meshProgramInfo) {
+    NewObject: function (gl, meshProgramInfo) {
         const obj = new Model(gl, meshProgramInfo, Math.floor(Math.random() * 3));
         obj.id = objs.length;
         objs.push(obj);
 
         const gui = new dat.GUI();
-        const gui_root = gui.addFolder("Object " + objs.length);
+        const gui_root = gui.addFolder("Object " + obj.id);
         gui_root.open();
 
         const gui_position = gui_root.addFolder("Position");
-        gui_position.add(obj.position, "X", -500, 500, 1);
-        gui_position.add(obj.position, "Y", -500, 500, 1);
-        gui_position.add(obj.position, "Z", -500, 500, 1);
+        gui_position.add(obj.position, "X", -500, 500, 1).listen();
+        gui_position.add(obj.position, "Y", -500, 500, 1).listen();
+        gui_position.add(obj.position, "Z", -500, 500, 1).listen();
         gui_position.open();
 
         const gui_rotation = gui_root.addFolder("Rotation");
@@ -63,9 +21,11 @@ const controlsModel = {
         gui_rotation.open();
 
         const gui_scale = gui_root.addFolder("Scale");
-        gui_scale.add(obj.scale, "X", -10, 10, 0.1);
-        gui_scale.add(obj.scale, "Y", -10, 10, 0.1);
-        gui_scale.add(obj.scale, "Z", -10, 10, 0.1);
+        gui_scale.add(obj.scale, "X", -10, 10, 0.1).listen();
+        gui_scale.add(obj.scale, "Y", -10, 10, 0.1).listen();
+        gui_scale.add(obj.scale, "Z", -10, 10, 0.1).listen();
+
+        gui_root.add({Reset: controlsModel.Reset.bind(this, obj)}, "Reset");
 
         const gui_color = gui_root.addFolder("Color");
         Object.keys(obj.uniforms.u_colorMult).forEach((key) => {
@@ -86,8 +46,19 @@ const controlsModel = {
         gui_root.add({Remove: controlsModel.Remove.bind(this, gui, obj)},"Remove");
     },
 
+    Reset: function (obj) {
+        obj.position.X = 0;
+        obj.position.Y = 0;
+        obj.position.Z = 0;
+        obj.rotation.X = 0;
+        obj.rotation.Y = 0;
+        obj.rotation.Z = 0;
+        obj.scale.X = 1;
+        obj.scale.Y = 1;
+        obj.scale.Z = 1;
+    },
+
     Remove: function (gui, obj) {
-        console.log(objs.findIndex(x => x.id === obj.id));
         gui.destroy();
         objs.splice(objs.findIndex(x => x.id === obj.id), 1);
     },
@@ -140,26 +111,51 @@ const controlsCamera = {
     }
 }
 
-function Camera() {
-    this.position = {
-        X: 0,
-        Y: 0,
-        Z: 100
-    }
+const controlsCurve = {
+    NewCurve: function (gl, meshProgramInfo) {
+        const curve = new Curve(gl, meshProgramInfo);
+        curve.id = curves.length;
+        curves.push(curve);
+        controlsCurve.Update(curve, gl, meshProgramInfo);
 
-    this.rotation = {
-        X: 0,
-        Y: 0,
-        Z: 0
-    }
+        const gui = new dat.GUI();
+        const gui_root = gui.addFolder("Curve " + curve.id);
 
-    this.target = null
-    this.up = [0, 1, 0]
-    this.FOV = 60
+        curve.points.forEach(function (point, i) {
+            const gui_p = gui_root.addFolder("Point " + i);
+            gui_p.open();
+            Object.keys(point.position).forEach((key) => {
+                gui_p.add(point.position, key, -500, 500).onChange(function () {
+                    controlsCurve.Update(curve, gl, meshProgramInfo);
+                });
+            });
+        })
+
+        gui_root.add({Remove: controlsCurve.Remove.bind(this, gui, curve)},"Remove");
+    },
+
+    Remove: function (gui, curve) {
+        gui.destroy();
+        curves.splice(curves.findIndex(x => x.id === curve.id), 1);
+    },
+
+    Update: function (curve, gl, meshProgramInfo) {
+        curve.pts = [];
+        curve.interpolation = [];
+
+        curve.points.forEach(function (p) {
+            curve.pts.push(p.position);
+        });
+
+        getPointsOnBezierCurve(curve.pts, 50).forEach(function (p) {
+            curve.interpolation.push(new Point(gl, meshProgramInfo, p, false));
+        });
+    }
 }
 
 const loadGUI = (gl, meshProgramInfo) => {
     const cam = new Camera();
+    cam.id = cams.length;
     cams.push(cam);
 
     const gui = new dat.GUI();
@@ -168,9 +164,9 @@ const loadGUI = (gl, meshProgramInfo) => {
     gui_cam.open();
 
     const gui_position = gui_cam.addFolder("Position");
-    gui_position.add(cam.position, "X", -500, 500, 1);
-    gui_position.add(cam.position, "Y", -500, 500, 1);
-    gui_position.add(cam.position, "Z", -500, 500, 1);
+    gui_position.add(cam.position, "X", -500, 500, 1).listen();
+    gui_position.add(cam.position, "Y", -500, 500, 1).listen();
+    gui_position.add(cam.position, "Z", -500, 500, 1).listen();
     gui_position.open();
 
     const gui_rotation = gui_cam.addFolder("Rotation");
@@ -179,8 +175,11 @@ const loadGUI = (gl, meshProgramInfo) => {
     gui_rotation.add(cam.rotation, "Z", -360, 360, 1).listen();
     gui_rotation.open();
 
-    gui_cam.add(cam, "FOV", 1, 359, 1);
+    gui_cam.add(cam, "FOV", 1, 179, 1).listen();
 
-    gui.add({Add: controlsModel.Add.bind(this, gl, meshProgramInfo)},"Add");
-    controlsModel.Add(gl, meshProgramInfo);
+    gui.add({NewObject: controlsModel.NewObject.bind(this, gl, meshProgramInfo)},"NewObject");
+    controlsModel.NewObject(gl, meshProgramInfo);
+
+    gui.add({NewCurve: controlsCurve.NewCurve.bind(this, gl, meshProgramInfo)}, "NewCurve");
+    controlsCurve.NewCurve(gl, meshProgramInfo);
 };

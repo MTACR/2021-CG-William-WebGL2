@@ -1,10 +1,12 @@
 function main() {
     const {gl, meshProgramInfo} = initializeWorld();
-
+    let then = 0;
     loadGUI(gl, meshProgramInfo);
 
+    //TODO abaixo:
+
+    //-----------------------CAMERA
     const cam = cams[0];
-    let then = 0;
 
     function render(now) {
         const deltaTime = now - then;
@@ -39,9 +41,37 @@ function main() {
             m4.perspective(degToRad(cam.FOV), gl.canvas.clientWidth / gl.canvas.clientHeight, 1, 2000),
             m4.inverse(camera));
 
+        curves.forEach(function (curve) {
+            curve.points.forEach(function (point) {
+                gl.bindVertexArray(point.VAO);
+
+                point.uniforms.u_matrix = computeMatrix(projection,
+                    point.position, [0, 0, 0], [0.1, 0.1, 0.1]);
+
+                twgl.setUniforms(meshProgramInfo, point.uniforms);
+                twgl.drawBufferInfo(gl, point.buffer);
+            });
+
+            curve.interpolation.forEach(function (point) {
+                gl.bindVertexArray(point.VAO);
+
+                point.uniforms.u_matrix = computeMatrix(projection,
+                    point.position, [0, 0, 0], [0.1, 0.1, 0.1]);
+
+                twgl.setUniforms(meshProgramInfo, point.uniforms);
+                twgl.drawBufferInfo(gl, point.buffer);
+            });
+        });
+
+        const tempPoints = getPointOnBezierCurve(curves[0].pts, (now % 5000) / 5000);
+
         objs.forEach(function (obj, i) {
 
             gl.bindVertexArray(obj.VAO);
+
+            obj.position.X = tempPoints[0];
+            obj.position.Y = tempPoints[1];
+            obj.position.Z = tempPoints[2];
 
             obj.uniforms.u_matrix = computeMatrix(projection,
                 [obj.position.X, obj.position.Y, obj.position.Z],
