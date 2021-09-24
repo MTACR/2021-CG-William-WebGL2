@@ -3,10 +3,6 @@ function main() {
     let then = 0;
     loadGUI(gl, meshProgramInfo);
 
-    //TODO abaixo:
-
-    //-----------------------CAMERA
-
     function render(now) {
         const deltaTime = now - then;
         then = now;
@@ -25,9 +21,17 @@ function main() {
             var lookAt = camera.target.position;
             screen = m4.lookAt(camera.position, lookAt, camera.up);
 
-            //cam.rotation.Y = radToDeg(Math.atan2(cam.position.X, cam.target.position.X));
-            //cam.rotation.X = radToDeg(Math.atan2(cam.position.Y, cam.target.position.Y));
-            //cam.rotation.Z = Math.atan2(cam.target.position.Z, cam.position.Z);
+            let x = lookAt[0] - camera.position[0];
+            let y = lookAt[1] - camera.position[1];
+            let z = lookAt[2] - camera.position[2];
+
+            let xx = Math.atan2(y, z);
+            let yy = Math.atan2(x * Math.cos(xx), z);
+            let zz = Math.atan2(Math.cos(xx), Math.sin(xx) * Math.sin(yy));
+
+            camera.rotation[0] = 180 - radToDeg(xx);
+            camera.rotation[1] = 180 - radToDeg(yy);
+            camera.rotation[2] = 270 - radToDeg(zz);
 
         } else {
             screen = m4.translate(m4.identity(), camera.position[0], camera.position[1], camera.position[2]);
