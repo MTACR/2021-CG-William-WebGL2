@@ -6,7 +6,6 @@ function main() {
     //TODO abaixo:
 
     //-----------------------CAMERA
-    const cam = cams[0];
 
     function render(now) {
         const deltaTime = now - then;
@@ -20,26 +19,26 @@ function main() {
         gl.useProgram(meshProgramInfo.program);
         gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
 
-        let camera;
+        let screen;
 
-        if (cam.target != null) {
-            var lookAt = [cam.target.position.X, cam.target.position.Y, cam.target.position.Z];
-            camera = m4.lookAt([cam.position.X, cam.position.Y, cam.position.Z], lookAt, cam.up);
+        if (camera.target != null) {
+            var lookAt = camera.target.position;
+            screen = m4.lookAt(camera.position, lookAt, camera.up);
 
             //cam.rotation.Y = radToDeg(Math.atan2(cam.position.X, cam.target.position.X));
             //cam.rotation.X = radToDeg(Math.atan2(cam.position.Y, cam.target.position.Y));
             //cam.rotation.Z = Math.atan2(cam.target.position.Z, cam.position.Z);
 
         } else {
-            camera = m4.translate(m4.identity(), cam.position.X, cam.position.Y, cam.position.Z);
-            camera = m4.xRotate(camera, degToRad(cam.rotation.X));
-            camera = m4.yRotate(camera, degToRad(cam.rotation.Y));
-            camera = m4.zRotate(camera, degToRad(cam.rotation.Z));
+            screen = m4.translate(m4.identity(), camera.position[0], camera.position[1], camera.position[2]);
+            screen = m4.xRotate(screen, degToRad(camera.rotation[0]));
+            screen = m4.yRotate(screen, degToRad(camera.rotation[1]));
+            screen = m4.zRotate(screen, degToRad(camera.rotation[2]));
         }
 
         const projection = m4.multiply(
-            m4.perspective(degToRad(cam.FOV), gl.canvas.clientWidth / gl.canvas.clientHeight, 1, 2000),
-            m4.inverse(camera));
+            m4.perspective(degToRad(camera.FOV), gl.canvas.clientWidth / gl.canvas.clientHeight, 1, 2000),
+            m4.inverse(screen));
 
         curves.forEach(function (curve) {
             curve.points.forEach(function (point) {
@@ -63,29 +62,23 @@ function main() {
             });
         });
 
-        const tempPoints = getPointOnBezierCurve(curves[0].pts, (now % 5000) / 5000);
+        models.forEach(function (model, i) {
 
-        objs.forEach(function (obj, i) {
+            gl.bindVertexArray(model.VAO);
 
-            gl.bindVertexArray(obj.VAO);
-
-            obj.position.X = tempPoints[0];
-            obj.position.Y = tempPoints[1];
-            obj.position.Z = tempPoints[2];
-
-            obj.uniforms.u_matrix = computeMatrix(projection,
-                [obj.position.X, obj.position.Y, obj.position.Z],
-                [obj.rotation.X, obj.rotation.Y, obj.rotation.Z],
-                [obj.scale.X, obj.scale.Y, obj.scale.Z]
-            );
-
-            Object.entries(obj.animations).forEach(function (anim) {
+            Object.entries(model.animations).forEach(function (anim) {
                 if (anim[1] != null)
-                    anim[1](deltaTime / 100 * obj.speed);
+                    anim[1](now, deltaTime);
             });
 
-            twgl.setUniforms(meshProgramInfo, obj.uniforms);
-            twgl.drawBufferInfo(gl, obj.buffer);
+            model.uniforms.u_matrix = computeMatrix(projection,
+                model.position,
+                model.rotation,
+                model.scale
+            );
+
+            twgl.setUniforms(meshProgramInfo, model.uniforms);
+            twgl.drawBufferInfo(gl, model.buffer);
         });
 
         requestAnimationFrame(render);

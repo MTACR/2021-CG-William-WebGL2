@@ -9,6 +9,7 @@ function Curve(gl, meshProgramInfo) {
 
     this.interpolation = [];
     this.pts = [];
+    this.e = null;
 }
 
 class Point {
@@ -37,6 +38,7 @@ const curves = []
 
 function getPointOnBezierCurve(points, t) {
     const invT = (1 - t);
+
     return v2.add(v2.mult(points[0], invT * invT * invT),
         v2.mult(points[1], 3 * t * invT * invT),
         v2.mult(points[2], 3 * invT * t * t),
