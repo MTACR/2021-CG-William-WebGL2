@@ -146,6 +146,8 @@ const controlsCamera = {
 
         gui_root.add(cam, "FOV", 1, 179, 1).listen();
 
+        gui_root.add(cam, "active").name("Active").listen().onFinishChange(function () {controlsCamera.Active(cam);});
+
         gui_root.add({Remove: controlsCamera.Remove.bind(this, cam, gui)}, "Remove");
     },
 
@@ -154,7 +156,22 @@ const controlsCamera = {
             gui.destroy();
             cams.splice(cams.findIndex(x => x.id === cam.id), 1);
             camera = cams[cams.length - 1];
+            camera.active = true;
         }
+    },
+
+    Active: function (cam) {
+        if (cam === camera) {
+            cam.active = true;
+            return;
+        }
+
+        camera = cam;
+
+        cams.forEach(function (c) {
+            if (c !== cam)
+                c.active = false;
+        });
     }
 }
 
