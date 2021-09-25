@@ -1,7 +1,7 @@
 const animationsModel = {
     Rotate: function (model) {
         if (model.animations.rotate == null)
-            model.animations.rotate = function (now, deltaTime) {
+            model.animations.rotate = function (deltaTime) {
                 const f = deltaTime * 0.1 * model.speed
                 model.rotation[1] = (model.rotation[1] + f) % 360;
             };
@@ -11,7 +11,7 @@ const animationsModel = {
 
     Color: function (model) {
         if (model.animations.color == null)
-            model.animations.color = function (now, deltaTime) {
+            model.animations.color = function (deltaTime) {
                 let f = deltaTime / (10000 / model.speed);
                 f = f >= 0 ? f : 1 + f;
 
@@ -38,7 +38,7 @@ const animationsModel = {
         if (model.animations.curve == null) {
             let t = 0;
 
-            model.animations.curve = function (now, deltaTime) {
+            model.animations.curve = function (deltaTime) {
                 t = (t + deltaTime * model.speed * 0.0001) % 1;
                 const p = getPointOnBezierCurve(curve.pts, t >= 0 ? t : 1 + t);
 

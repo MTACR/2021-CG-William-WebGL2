@@ -10,6 +10,7 @@ class Model {
         this.shape[s] = true;
     }
 
+    animationList = [];
     position = [0, 0, 0];
     rotation = [20, 40, 0];
     scale = [1, 1, 1];

@@ -72,7 +72,7 @@ function main() {
 
             Object.entries(model.animations).forEach(function (anim) {
                 if (anim[1] != null)
-                    anim[1](now, deltaTime);
+                    anim[1](deltaTime);
             });
 
             model.uniforms.u_matrix = computeMatrix(projection,

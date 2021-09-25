@@ -115,7 +115,7 @@ const controlsCamera = {
             c.active = false;
         });
         cams.push(cam);
-        
+
         if (camera != null)
             cam.target = camera.target;
 
