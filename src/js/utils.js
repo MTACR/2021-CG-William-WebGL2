@@ -3,13 +3,37 @@ const degToRad = (d) => (d * Math.PI) / 180;
 const radToDeg = (r) => (r * 180) / Math.PI;
 
 function computeMatrix(projection, translation, rotation, scale) {
-    let i = m4.identity();
-    let rx = m4.xRotate(i, degToRad(rotation[0]));
-    let ry = m4.yRotate(i, degToRad(rotation[1]));
-    let rz = m4.zRotate(i, degToRad(rotation[2]));
-    let r = m4.multiply(rz, m4.multiply(rx, ry));
-    let t = m4.translate(projection, translation[0], translation[1], translation[2]);
+    const i = m4.identity();
+    const rx = m4.xRotate(i, degToRad(rotation[0]));
+    const ry = m4.yRotate(i, degToRad(rotation[1]));
+    const rz = m4.zRotate(i, degToRad(rotation[2]));
+
+    const r = m4.multiply(rx, m4.multiply(ry, rz));
+    const t = m4.translate(projection, translation[0], translation[1], translation[2]);
     return m4.scale(m4.multiply(t, r), scale[0], scale[1], scale[2]);
+}
+
+function computeMatrixPivot(projection, translation, rotation, scale, pivot, angle) {
+    const i = m4.identity();
+    const r = m4.axisRotate(i, pivot, angle)
+
+    const t = m4.translate(projection, translation[0], translation[1], translation[2]);
+    return m4.scale(m4.multiply(t, r), scale[0], scale[1], scale[2]);
+
+
+
+    //const t = m4.translate(projection, translation[0], translation[1], translation[2]);
+
+    /*let m = m4.translate(projection, pivot[0], pivot[1], pivot[2]);
+
+    m = m4.xRotate(m, degToRad(rotation[0]));
+    m = m4.yRotate(m, degToRad(rotation[1]));
+    m = m4.zRotate(m, degToRad(rotation[2]));
+    return m4.scale(m, scale[0], scale[1], scale[2]);*/
+}
+
+function distance(a, b) {
+    return Math.sqrt(Math.pow(b[0] - a[0], 2) + Math.pow(b[1] - a[1], 2) + Math.pow(b[2] - a[2], 2));
 }
 
 const v2 = (function() {

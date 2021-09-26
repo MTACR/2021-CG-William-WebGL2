@@ -24,23 +24,18 @@ const animationsModel = {
     },
 
     Curve: function (model) {
-        if (!model.animating[2]) {
-            model.animating[2] = false;
-            model.animations.curve = null;
-            model.curve = null;
-        }
-
-        if (model.curve == null)
+        if (model.curve == "")
             return;
 
         const curve = curves[curves.findIndex(x => x.id == model.curve)];
 
-        if (model.animations.curve == null) {
-            let t = 0;
+        if (curve === undefined)
+            return;
 
+        if (model.animations.curve == null) {
             model.animations.curve = function (deltaTime) {
-                t = (t + deltaTime * model.speed * 0.0001) % 1;
-                const p = getPointOnBezierCurve(curve.pts, t >= 0 ? t : 1 + t);
+                model.curveT = (model.curveT + deltaTime * model.speed * 0.0001) % 1;
+                const p = getPointOnBezierCurve(curve.pts, model.curveT >= 0 ? model.curveT : 1 + model.curveT);
 
                 model.position[0] = p[0];
                 model.position[1] = p[1];

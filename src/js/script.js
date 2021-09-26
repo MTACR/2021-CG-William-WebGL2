@@ -2,17 +2,16 @@ function main() {
     const {gl, meshProgramInfo} = initializeWorld();
     let then = 0;
     loadGUI(gl, meshProgramInfo);
+    gl.useProgram(meshProgramInfo.program);
 
     function render(now) {
         const deltaTime = now - then;
         then = now;
 
         twgl.resizeCanvasToDisplaySize(gl.canvas);
-
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
         gl.enable(gl.DEPTH_TEST);
         gl.enable(gl.CULL_FACE);
-        gl.useProgram(meshProgramInfo.program);
         gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
 
         let screen;
@@ -68,18 +67,71 @@ function main() {
 
         models.forEach(function (model, i) {
 
-            gl.bindVertexArray(model.VAO);
-
             Object.entries(model.animations).forEach(function (anim) {
                 if (anim[1] != null)
                     anim[1](deltaTime);
             });
 
-            model.uniforms.u_matrix = computeMatrix(projection,
-                model.position,
-                model.rotation,
-                model.scale
-            );
+            gl.bindVertexArray(model.pivot.VAO);
+
+            model.pivot.uniforms.u_matrix = computeMatrix(projection,
+                model.pivot.position, [0, 0, 0], [0.1, 0.1, 0.1]);
+
+            twgl.setUniforms(meshProgramInfo, model.pivot.uniforms);
+            twgl.drawBufferInfo(gl, model.pivot.buffer);
+
+            gl.bindVertexArray(model.VAO);
+
+            if (model.usePivot) {
+                //const i = m4.identity();
+                //var m = m4.yRotate(i, degToRad(model.rotation[1]));
+
+                /*const rx = m4.xRotate(i, degToRad(model.rotation[0]));
+                const ry = m4.yRotate(rx, degToRad(model.rotation[1]));
+                const rz = m4.zRotate(ry, degToRad(model.rotation[2]));*/
+
+                //const r = m4.multiply(rz, m4.multiply(rx, ry));
+                /*var m = m4.translate(rz, model.pivot.position[0],
+                    model.pivot.position[1],
+                    model.pivot.position[2]);*/
+                /*var m = m4.translate(rz, model.pivot.position[0] - model.pivot.distance,
+                    model.pivot.position[1] - model.pivot.distance,
+                    model.pivot.position[2] - model.pivot.distance);*/
+
+                //var m = m4.translate(rz, model.pivot.distance, model.pivot.distance, model.pivot.distance);
+                //m = m4.translate(m, model.pivot.position[0], model.pivot.position[1], model.pivot.position[2]);
+
+                /*var p = [
+                    m[12],
+                    m[13],
+                    m[14]
+                ];*/
+
+                //model.position[0] = p[0];
+                //model.position[1] = p[1];
+                //model.position[2] = p[2];
+
+
+                //var matrix = m4.lookAt(model.position, model.pivot.position, [0, 1, 0]);
+
+                //model.uniforms.u_matrix = m4.multiply(projection, m);
+
+                model.uniforms.u_matrix = computeMatrixPivot(projection,
+                    model.position,
+                    model.rotation,
+                    model.scale,
+                    model.pivot.position,
+                    model.pivot.distance
+                );
+
+            } else {
+
+                model.uniforms.u_matrix = computeMatrix(projection,
+                    model.position,
+                    model.rotation,
+                    model.scale
+                );
+            }
 
             twgl.setUniforms(meshProgramInfo, model.uniforms);
             twgl.drawBufferInfo(gl, model.buffer);

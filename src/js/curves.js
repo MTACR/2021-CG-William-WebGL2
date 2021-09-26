@@ -9,7 +9,6 @@ function Curve(gl, meshProgramInfo) {
 
     this.interpolation = [];
     this.pts = [];
-    this.e = null;
 }
 
 class Point {
