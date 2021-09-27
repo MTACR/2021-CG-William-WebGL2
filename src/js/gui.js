@@ -54,32 +54,42 @@ const controlsModel = {
             }
         });
 
-        const gui_rotation = gui_root.addFolder("Rotation");
-        gui_rotation.open();
-        gui_rotation.add(model.rotation, "0", -360, 360, 1).name("X").listen();
-        gui_rotation.add(model.rotation, "1", -360, 360, 1).name("Y").listen();
-        gui_rotation.add(model.rotation, "2", -360, 360, 1).name("Z").listen();
-        gui_rotation.add({
-            Reset: function () {
-                model.rotation[0] = 0;
-                model.rotation[1] = 0;
-                model.rotation[2] = 0;
-            }
-        }, "Reset");
-
-        const gui_pivot = gui_rotation.addFolder("Pivot");
-        gui_pivot.add(model.pivot.position, "0", -500, 500, 1).name("X").listen();
-        gui_pivot.add(model.pivot.position, "1", -500, 500, 1).name("Y").listen();
-        gui_pivot.add(model.pivot.position, "2", -500, 500, 1).name("Z").listen();
-        gui_pivot.add({
+        const gui_orbit = gui_position.addFolder("Orbit");
+        const gui_pivot_p = gui_orbit.addFolder("Pivot");
+        gui_pivot_p.open();
+        gui_pivot_p.add(model.pivot.position, "0", -500, 500, 1).name("X").listen();
+        gui_pivot_p.add(model.pivot.position, "1", -500, 500, 1).name("Y").listen();
+        gui_pivot_p.add(model.pivot.position, "2", -500, 500, 1).name("Z").listen();
+        gui_pivot_p.add({
             Reset: function () {
                 model.pivot.position[0] = 0;
                 model.pivot.position[1] = 0;
                 model.pivot.position[2] = 0;
             }
         }, "Reset");
-        gui_pivot.add(model.pivot, "distance", 0, 100).name("Distance").listen();
-        gui_pivot.add(model, "usePivot").name("Enabled").listen();
+        const gui_pivot_r = gui_orbit.addFolder("Angle");
+        gui_pivot_r.open();
+        gui_pivot_r.add(model.pivot.rotation, "0", -500, 500, 1).name("X").listen();
+        gui_pivot_r.add(model.pivot.rotation, "1", -500, 500, 1).name("Y").listen();
+        gui_pivot_r.add(model.pivot.rotation, "2", -500, 500, 1).name("Z").listen();
+        gui_pivot_r.add({
+            Reset: function () {
+                model.pivot.rotation[0] = 0;
+                model.pivot.rotation[1] = 0;
+                model.pivot.rotation[2] = 0;
+            }
+        }, "Reset");
+
+        gui_orbit.add(model.pivot, "distance", 0, 100).name("Distance").listen();
+        gui_orbit.add(model, "usePivot").name("Enabled").listen().onFinishChange(function () {
+            //model.animating[2] = false;
+            //model.animations.curve = null;
+
+            if (!model.usePivot && model.animating[3]) {
+                model.animating[3] = false;
+                model.animations.orbit = null;
+            }
+        });
 
         const gui_scale = gui_root.addFolder("Scale");
         gui_scale.add(model.scale, "0", -10, 10, 0.1).name("X").listen();
@@ -90,6 +100,19 @@ const controlsModel = {
                 model.scale[0] = 1;
                 model.scale[1] = 1;
                 model.scale[2] = 1;
+            }
+        }, "Reset");
+
+        const gui_rotation = gui_root.addFolder("Rotation");
+        gui_rotation.open();
+        gui_rotation.add(model.rotation, "0", -360, 360, 1).name("X").listen();
+        gui_rotation.add(model.rotation, "1", -360, 360, 1).name("Y").listen();
+        gui_rotation.add(model.rotation, "2", -360, 360, 1).name("Z").listen();
+        gui_rotation.add({
+            Reset: function () {
+                model.rotation[0] = 0;
+                model.rotation[1] = 0;
+                model.rotation[2] = 0;
             }
         }, "Reset");
 
@@ -121,8 +144,24 @@ const controlsModel = {
                 model.animating[2] = false;
                 model.animations.curve = null;
             } else {
+                //model.animating[3] = false;
+                //model.usePivot = false;
+                //model.animations.orbit = null;
                 animationsModel.Curve(model);
             }
+        });
+        gui_anim.add(model.animating, "3").name("Orbit").listen().onFinishChange(function () {
+            if (model.animating[2] && !model.animating[3]) {
+                model.usePivot = false;
+            } else {
+                model.usePivot = true;
+            }
+
+
+
+            //model.animating[2] = false;
+            //model.animations.curve = null;
+            animationsModel.Orbit(model);
         });
 
         gui_anim.add(model, "speed", -10, 10, 0.1).name("Speed");
@@ -230,6 +269,8 @@ const controlsCamera = {
         });
 
         gui_root.add({Remove: controlsCamera.Remove.bind(this, cam, gui)}, "Remove");
+
+        gui.close();
     },
 
     Remove: function (cam, gui) {
@@ -298,6 +339,8 @@ const controlsCurve = {
         }, "Remove");
 
         controlsCurve.RefreshUI();
+
+        gui.close();
     },
 
     Update: function (curve, gl, meshProgramInfo) {
@@ -316,11 +359,14 @@ const controlsCurve = {
     RefreshUI: function () {
         models.forEach(function (model) {
             model.gui = model.gui.options(controlsModel.Curves()).name("Curve").listen().onFinishChange(function () {
-
                 if (model.curve == "") {
                     model.animations.curve = null;
                     model.animating[2] = false;
                 } else {
+                    //model.animating[3] = false;
+                    //model.usePivot = false;
+                    //model.animations.orbit = null;
+
                     const curve = curves[curves.findIndex(x => x.id == model.curve)];
 
                     if (curve === undefined)
@@ -328,9 +374,15 @@ const controlsCurve = {
 
                     const p = getPointOnBezierCurve(curve.pts, model.curveT >= 0 ? model.curveT : 1 + model.curveT);
 
-                    model.position[0] = p[0];
-                    model.position[1] = p[1];
-                    model.position[2] = p[2];
+                    if (model.animating[3]) {
+                        model.pivot.position[0] = p[0];
+                        model.pivot.position[1] = p[1];
+                        model.pivot.position[2] = p[2];
+                    } else {
+                        model.position[0] = p[0];
+                        model.position[1] = p[1];
+                        model.position[2] = p[2];
+                    }
                 }
             });
             model.gui.updateDisplay();

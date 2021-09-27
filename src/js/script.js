@@ -83,49 +83,15 @@ function main() {
             gl.bindVertexArray(model.VAO);
 
             if (model.usePivot) {
-                //const i = m4.identity();
-                //var m = m4.yRotate(i, degToRad(model.rotation[1]));
-
-                /*const rx = m4.xRotate(i, degToRad(model.rotation[0]));
-                const ry = m4.yRotate(rx, degToRad(model.rotation[1]));
-                const rz = m4.zRotate(ry, degToRad(model.rotation[2]));*/
-
-                //const r = m4.multiply(rz, m4.multiply(rx, ry));
-                /*var m = m4.translate(rz, model.pivot.position[0],
-                    model.pivot.position[1],
-                    model.pivot.position[2]);*/
-                /*var m = m4.translate(rz, model.pivot.position[0] - model.pivot.distance,
-                    model.pivot.position[1] - model.pivot.distance,
-                    model.pivot.position[2] - model.pivot.distance);*/
-
-                //var m = m4.translate(rz, model.pivot.distance, model.pivot.distance, model.pivot.distance);
-                //m = m4.translate(m, model.pivot.position[0], model.pivot.position[1], model.pivot.position[2]);
-
-                /*var p = [
-                    m[12],
-                    m[13],
-                    m[14]
-                ];*/
-
-                //model.position[0] = p[0];
-                //model.position[1] = p[1];
-                //model.position[2] = p[2];
-
-
-                //var matrix = m4.lookAt(model.position, model.pivot.position, [0, 1, 0]);
-
-                //model.uniforms.u_matrix = m4.multiply(projection, m);
-
                 model.uniforms.u_matrix = computeMatrixPivot(projection,
                     model.position,
                     model.rotation,
                     model.scale,
                     model.pivot.position,
-                    model.pivot.distance
+                    model.pivot.distance,
+                    model.pivot.rotation
                 );
-
             } else {
-
                 model.uniforms.u_matrix = computeMatrix(projection,
                     model.position,
                     model.rotation,

@@ -3,33 +3,28 @@ const degToRad = (d) => (d * Math.PI) / 180;
 const radToDeg = (r) => (r * 180) / Math.PI;
 
 function computeMatrix(projection, translation, rotation, scale) {
+    const t = m4.translate(projection, translation[0], translation[1], translation[2]);
+    return m4.scale(m4.multiply(t, computeRotation(rotation)), scale[0], scale[1], scale[2]);
+}
+
+function computeMatrixPivot(projection, position, rotation, scale, pivot, distance, orbit) {
+    const t = m4.translate(computeRotation(orbit), pivot[0], pivot[1], pivot[2]);
+    const p = m4.multiply(t, m4.translation(pivot[0] + distance, pivot[1] + distance, pivot[2] + distance));
+    const m = m4.multiply(projection, m4.multiply(p, computeRotation(rotation)));
+
+    position[0] = p[12];
+    position[1] = p[13];
+    position[2] = p[14];
+
+    return m4.scale(m, scale[0], scale[1], scale[2]);
+}
+
+function computeRotation(rotation) {
     const i = m4.identity();
     const rx = m4.xRotate(i, degToRad(rotation[0]));
     const ry = m4.yRotate(i, degToRad(rotation[1]));
     const rz = m4.zRotate(i, degToRad(rotation[2]));
-
-    const r = m4.multiply(rx, m4.multiply(ry, rz));
-    const t = m4.translate(projection, translation[0], translation[1], translation[2]);
-    return m4.scale(m4.multiply(t, r), scale[0], scale[1], scale[2]);
-}
-
-function computeMatrixPivot(projection, translation, rotation, scale, pivot, angle) {
-    const i = m4.identity();
-    const r = m4.axisRotate(i, pivot, angle)
-
-    const t = m4.translate(projection, translation[0], translation[1], translation[2]);
-    return m4.scale(m4.multiply(t, r), scale[0], scale[1], scale[2]);
-
-
-
-    //const t = m4.translate(projection, translation[0], translation[1], translation[2]);
-
-    /*let m = m4.translate(projection, pivot[0], pivot[1], pivot[2]);
-
-    m = m4.xRotate(m, degToRad(rotation[0]));
-    m = m4.yRotate(m, degToRad(rotation[1]));
-    m = m4.zRotate(m, degToRad(rotation[2]));
-    return m4.scale(m, scale[0], scale[1], scale[2]);*/
+    return m4.multiply(rx, m4.multiply(ry, rz));
 }
 
 function distance(a, b) {

@@ -3,7 +3,9 @@ const animationsModel = {
         if (model.animations.rotate == null)
             model.animations.rotate = function (deltaTime) {
                 const f = deltaTime * 0.1 * model.speed
+                model.rotation[0] = (model.rotation[0] + f) % 360;
                 model.rotation[1] = (model.rotation[1] + f) % 360;
+                model.rotation[2] = (model.rotation[2] + f) % 360;
             };
         else
             model.animations.rotate = null;
@@ -37,11 +39,29 @@ const animationsModel = {
                 model.curveT = (model.curveT + deltaTime * model.speed * 0.0001) % 1;
                 const p = getPointOnBezierCurve(curve.pts, model.curveT >= 0 ? model.curveT : 1 + model.curveT);
 
-                model.position[0] = p[0];
-                model.position[1] = p[1];
-                model.position[2] = p[2];
+                if (model.animating[3]) {
+                    model.pivot.position[0] = p[0];
+                    model.pivot.position[1] = p[1];
+                    model.pivot.position[2] = p[2];
+                } else {
+                    model.position[0] = p[0];
+                    model.position[1] = p[1];
+                    model.position[2] = p[2];
+                }
             };
         } else
             model.animations.curve = null;
+    },
+
+    Orbit: function (model) {
+        if (model.animations.orbit == null)
+            model.animations.orbit = function (deltaTime) {
+                const f = deltaTime * 0.1 * model.speed
+                model.pivot.rotation[0] = (model.pivot.rotation[0] + f) % 360;
+                model.pivot.rotation[1] = (model.pivot.rotation[1] + f) % 360;
+                model.pivot.rotation[2] = (model.pivot.rotation[2] + f) % 360;
+            };
+        else
+            model.animations.orbit = null;
     }
 }
