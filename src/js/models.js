@@ -19,7 +19,7 @@ function Model(gl, meshProgramInfo, s) {
     this.usePivot = false;
     this.animating = [false, false, false, false];
     this.curve = "";
-    this.gui;
+    this.gui = null;
 
     this.uniforms = {
         u_colorMult: [Math.random(), Math.random(), Math.random(), 1],
@@ -36,13 +36,13 @@ function Model(gl, meshProgramInfo, s) {
     this.pivot = {
         position: [0, 0, 0],
         rotation: [0, 0, 0],
+        distance: [0, 0, 0],
         buffer: null,
         VAO: null,
         uniforms: {
             u_colorMult: [0, 1, 0, 1],
             u_matrix: m4.identity()
-        },
-        distance: [10, 0, 0]
+        }
     };
 
     this.pivot.buffer = flattenedPrimitives.createSphereBufferInfo(gl, 6, 10, 10);

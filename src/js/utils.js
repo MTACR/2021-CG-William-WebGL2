@@ -1,5 +1,4 @@
 const degToRad = (d) => (d * Math.PI) / 180;
-
 const radToDeg = (r) => (r * 180) / Math.PI;
 
 function computeMatrix(projection, translation, rotation, scale) {
@@ -7,9 +6,9 @@ function computeMatrix(projection, translation, rotation, scale) {
     return m4.scale(m4.multiply(t, computeRotation(rotation)), scale[0], scale[1], scale[2]);
 }
 
-function computeMatrixPivot(projection, position, rotation, scale, pivot, distance, orbit) {
-    const t = m4.translate(computeRotation(orbit), pivot[0], pivot[1], pivot[2]);
-    const p = m4.multiply(t, m4.translation(distance[0], distance[1], distance[2]));
+function computeMatrixPivot(projection, position, rotation, scale, pivot, distance, angle) {
+    const t = m4.translate(computeRotation(angle), pivot[0], pivot[1], pivot[2]);
+    const p = m4.translate(t, distance[0], distance[1], distance[2]);
     const m = m4.multiply(projection, m4.multiply(p, computeRotation(rotation)));
 
     position[0] = p[12];
@@ -20,19 +19,47 @@ function computeMatrixPivot(projection, position, rotation, scale, pivot, distan
 }
 
 function computeRotation(rotation) {
-    const i = m4.identity();
-    const rx = m4.xRotate(i, degToRad(rotation[0]));
-    const ry = m4.yRotate(i, degToRad(rotation[1]));
-    const rz = m4.zRotate(i, degToRad(rotation[2]));
+    const rx = m4.xRotation(degToRad(rotation[0]));
+    const ry = m4.yRotation(degToRad(rotation[1]));
+    const rz = m4.zRotation(degToRad(rotation[2]));
     return m4.multiply(rx, m4.multiply(ry, rz));
+}
+
+function computeCamera() {
+    let screen;
+
+    if (camera.target != null) {
+        let lookAt = camera.target.position;
+        screen = m4.lookAt(camera.position, lookAt, camera.up);
+
+        let x = lookAt[0] - camera.position[0];
+        let y = lookAt[1] - camera.position[1];
+        let z = lookAt[2] - camera.position[2];
+
+        let xx = Math.atan2(y, z);
+        let yy = Math.atan2(x * Math.cos(xx), z);
+        let zz = Math.atan2(Math.cos(xx), Math.sin(xx) * Math.sin(yy));
+
+        camera.rotation[0] = 180 - radToDeg(xx);
+        camera.rotation[1] = 180 - radToDeg(yy);
+        camera.rotation[2] = 270 - radToDeg(zz);
+
+    } else {
+        screen = m4.translation(camera.position[0], camera.position[1], camera.position[2]);
+        screen = m4.xRotate(screen, degToRad(camera.rotation[0]));
+        screen = m4.yRotate(screen, degToRad(camera.rotation[1]));
+        screen = m4.zRotate(screen, degToRad(camera.rotation[2]));
+    }
+
+    return screen;
 }
 
 function distance(a, b) {
     return Math.sqrt(Math.pow(b[0] - a[0], 2) + Math.pow(b[1] - a[1], 2) + Math.pow(b[2] - a[2], 2));
 }
 
-const v2 = (function() {
-    function add(a, ...args) {
+const v2 = {
+    add: function(a, ...args) {
         const n = a.slice();
         [...args].forEach(p => {
             n[0] += p[0];
@@ -40,9 +67,9 @@ const v2 = (function() {
             n[2] += p[2];
         });
         return n;
-    }
+    },
 
-    function sub(a, ...args) {
+    /*function sub(a, ...args) {
         const n = a.slice();
         [...args].forEach(p => {
             n[0] -= p[0];
@@ -50,9 +77,9 @@ const v2 = (function() {
             n[2] -= p[2];
         });
         return n;
-    }
+    }*/
 
-    function mult(a, s) {
+    mult: function (a, s) {
         if (Array.isArray(s)) {
             let t = s;
             s = a;
@@ -69,7 +96,7 @@ const v2 = (function() {
         }
     }
 
-    function lerp(a, b, t) {
+    /*function lerp(a, b, t) {
         return [
             a[0] + (b[0] - a[0]) * t,
             a[1] + (b[1] - a[1]) * t,
@@ -93,20 +120,16 @@ const v2 = (function() {
         ];
     }
 
-    // compute the distance squared between a and b
     function distanceSq(a, b) {
         const dx = a[0] - b[0];
         const dy = a[1] - b[1];
         return dx * dx + dy * dy;
     }
 
-    // compute the distance between a and b
     function distance(a, b) {
         return Math.sqrt(distanceSq(a, b));
     }
 
-    // compute the distance squared from p to the line segment
-    // formed by v and w
     function distanceToSegmentSq(p, v, w) {
         const l2 = distanceSq(v, w);
         if (l2 === 0) {
@@ -117,22 +140,7 @@ const v2 = (function() {
         return distanceSq(p, lerp(v, w, t));
     }
 
-    // compute the distance from p to the line segment
-    // formed by v and w
     function distanceToSegment(p, v, w) {
         return Math.sqrt(distanceToSegmentSq(p, v, w));
-    }
-
-    return {
-        add: add,
-        sub: sub,
-        max: max,
-        min: min,
-        mult: mult,
-        lerp: lerp,
-        distance: distance,
-        distanceSq: distanceSq,
-        distanceToSegment: distanceToSegment,
-        distanceToSegmentSq: distanceToSegmentSq,
-    };
-}());
+    }*/
+}

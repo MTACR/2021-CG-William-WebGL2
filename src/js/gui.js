@@ -96,18 +96,6 @@ const controlsModel = {
             }
         });
 
-        const gui_scale = gui_root.addFolder("Scale");
-        gui_scale.add(model.scale, "0", -10, 10, 0.1).name("X").listen();
-        gui_scale.add(model.scale, "1", -10, 10, 0.1).name("Y").listen();
-        gui_scale.add(model.scale, "2", -10, 10, 0.1).name("Z").listen();
-        gui_scale.add({
-            Reset: function () {
-                model.scale[0] = 1;
-                model.scale[1] = 1;
-                model.scale[2] = 1;
-            }
-        }, "Reset");
-
         const gui_rotation = gui_root.addFolder("Rotation");
         gui_rotation.open();
         gui_rotation.add(model.rotation, "0", -360, 360, 1).name("X").listen();
@@ -118,6 +106,18 @@ const controlsModel = {
                 model.rotation[0] = 0;
                 model.rotation[1] = 0;
                 model.rotation[2] = 0;
+            }
+        }, "Reset");
+
+        const gui_scale = gui_root.addFolder("Scale");
+        gui_scale.add(model.scale, "0", -10, 10, 0.1).name("X").listen();
+        gui_scale.add(model.scale, "1", -10, 10, 0.1).name("Y").listen();
+        gui_scale.add(model.scale, "2", -10, 10, 0.1).name("Z").listen();
+        gui_scale.add({
+            Reset: function () {
+                model.scale[0] = 1;
+                model.scale[1] = 1;
+                model.scale[2] = 1;
             }
         }, "Reset");
 
