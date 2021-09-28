@@ -18,8 +18,8 @@ function main() {
             m4.perspective(degToRad(camera.FOV), gl.canvas.clientWidth / gl.canvas.clientHeight, 1, 2000),
             m4.inverse(computeCamera()));
 
-        curves.forEach(function (curve) {
-            curve.points.forEach(function (point) {
+        curves.forEach(curve => {
+            curve.points.forEach(point => {
                 gl.bindVertexArray(point.VAO);
 
                 point.uniforms.u_matrix = computeMatrix(projection,
@@ -29,7 +29,7 @@ function main() {
                 twgl.drawBufferInfo(gl, point.buffer);
             });
 
-            curve.interpolation.forEach(function (point) {
+            curve.interpolation.forEach(point => {
                 gl.bindVertexArray(point.VAO);
 
                 point.uniforms.u_matrix = computeMatrix(projection,
@@ -40,12 +40,18 @@ function main() {
             });
         });
 
-        models.forEach(function (model, i) {
+        cams.forEach(cam => {
+            tickAnimations(cam);
+        });
 
-            Object.entries(model.animations).forEach(function (anim) {
+        models.forEach((model, i)  =>{
+
+            Object.entries(model.animations).forEach(anim => {
                 if (anim[1] != null)
                     anim[1](deltaTime);
             });
+
+            tickAnimations(model);
 
             gl.bindVertexArray(model.pivot.VAO);
 
