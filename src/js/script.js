@@ -41,11 +41,15 @@ function main() {
         });
 
         cams.forEach(cam => {
+            Object.entries(cam.animations).forEach(anim => {
+                if (anim[1] != null)
+                    anim[1](deltaTime);
+            });
+
             tickAnimations(cam);
         });
 
-        models.forEach((model, i)  =>{
-
+        models.forEach((model, i) => {
             Object.entries(model.animations).forEach(anim => {
                 if (anim[1] != null)
                     anim[1](deltaTime);

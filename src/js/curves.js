@@ -113,6 +113,10 @@ const controlsCurve = {
     RefreshUI: function () {
         models.forEach(model => {
             model.gui = model.gui.options(controlsCurve.Curves()).name("Curve").listen().onFinishChange(function () {
+                if (model.animating[1] && !model.animating[3]) {
+                    model.usePivot = false;
+                }
+
                 if (model.curve == "") {
                     model.animations.curve = null;
                     model.animating[2] = false;

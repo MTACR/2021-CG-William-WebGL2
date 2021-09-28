@@ -8,8 +8,16 @@ class Camera {
     curve = "";
     gui = null;
     curveT = 0;
+    speed = 1;
     animate = false;
     animationList = [];
+    animating = [false, false, false, false];
+    animations = {
+        //rotate: null,
+        curve: null,
+        //color: null,
+        //orbit: null
+    };
 }
 
 const controlsCamera = {
@@ -97,9 +105,30 @@ const controlsCamera = {
             }
         }, "Reset");
 
-        gui_root.add(cam, "FOV", 1, 179).listen();
+        const gui_anim = gui_root.addFolder("Animations");
 
-        gui_root.add({"Animation": controlsCamera.Animation.bind(this, cam)}, "Animation");
+        gui_anim.add(cam.animating, "2").name("Curve").listen().onChange(function () {
+            if (cam.animate) {
+                cam.animating[2] = false;
+                return;
+            }
+
+            if (cam.curve == "") {
+                cam.animating[2] = false;
+                cam.animations.curve = null;
+            } else {
+                //model.animating[3] = false;
+                //model.usePivot = false;
+                //model.animations.orbit = null;
+                animationsModel.Curve(cam);
+            }
+        });
+
+        gui_anim.add(cam, "speed", -10, 10).name("Speed");
+
+        gui_anim.add({"Custom": controlsCamera.Animation.bind(this, cam)}, "Custom");
+
+        gui_root.add(cam, "FOV", 1, 179).listen();
 
         gui_root.add(cam, "active").name("Active").listen().onFinishChange(function () {
             controlsCamera.Active(cam);

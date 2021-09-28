@@ -25,32 +25,32 @@ const animationsModel = {
             model.animations.color = null;
     },
 
-    Curve: function (model) {
-        if (model.curve == "")
+    Curve: function (obj) {
+        if (obj.curve == "")
             return;
 
-        const curve = curves[curves.findIndex(x => x.id == model.curve)];
+        const curve = curves[curves.findIndex(x => x.id == obj.curve)];
 
         if (curve === undefined)
             return;
 
-        if (model.animations.curve == null) {
-            model.animations.curve = function (deltaTime) {
-                model.curveT = (model.curveT + deltaTime * model.speed * 0.0001) % 1;
-                const p = getPointOnBezierCurve(curve.pts, model.curveT >= 0 ? model.curveT : 1 + model.curveT);
+        if (obj.animations.curve == null) {
+            obj.animations.curve = function (deltaTime) {
+                obj.curveT = (obj.curveT + deltaTime * obj.speed * 0.0001) % 1;
+                const p = getPointOnBezierCurve(curve.pts, obj.curveT >= 0 ? obj.curveT : 1 + obj.curveT);
 
-                if (model.animating[3]) {
-                    model.pivot.position[0] = p[0];
-                    model.pivot.position[1] = p[1];
-                    model.pivot.position[2] = p[2];
+                if (obj.animating[3]) {
+                    obj.pivot.position[0] = p[0];
+                    obj.pivot.position[1] = p[1];
+                    obj.pivot.position[2] = p[2];
                 } else {
-                    model.position[0] = p[0];
-                    model.position[1] = p[1];
-                    model.position[2] = p[2];
+                    obj.position[0] = p[0];
+                    obj.position[1] = p[1];
+                    obj.position[2] = p[2];
                 }
             };
         } else
-            model.animations.curve = null;
+            obj.animations.curve = null;
     },
 
     Orbit: function (model) {

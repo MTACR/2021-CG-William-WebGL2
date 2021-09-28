@@ -153,6 +153,10 @@ const controlsModel = {
                 return;
             }
 
+            if (model.animating[2] && !model.animating[3]) {
+                model.usePivot = false;
+            }
+
             if (!model.usePivot && model.animating[3]) {
                 model.animating[3] = false;
                 model.animations.orbit = null;
@@ -221,6 +225,10 @@ const controlsModel = {
             if (model.animate) {
                 model.animating[2] = false;
                 return;
+            }
+
+            if (model.animating[2] && !model.animating[3]) {
+                model.usePivot = false;
             }
 
             if (model.curve == "") {
