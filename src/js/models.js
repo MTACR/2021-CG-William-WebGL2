@@ -42,7 +42,7 @@ function Model(gl, meshProgramInfo, s) {
             u_colorMult: [0, 1, 0, 1],
             u_matrix: m4.identity()
         },
-        distance: 10
+        distance: [10, 0, 0]
     };
 
     this.pivot.buffer = flattenedPrimitives.createSphereBufferInfo(gl, 6, 10, 10);

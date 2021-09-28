@@ -9,7 +9,7 @@ function computeMatrix(projection, translation, rotation, scale) {
 
 function computeMatrixPivot(projection, position, rotation, scale, pivot, distance, orbit) {
     const t = m4.translate(computeRotation(orbit), pivot[0], pivot[1], pivot[2]);
-    const p = m4.multiply(t, m4.translation(pivot[0] + distance, pivot[1] + distance, pivot[2] + distance));
+    const p = m4.multiply(t, m4.translation(distance[0], distance[1], distance[2]));
     const m = m4.multiply(projection, m4.multiply(p, computeRotation(rotation)));
 
     position[0] = p[12];

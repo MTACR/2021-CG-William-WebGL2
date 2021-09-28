@@ -80,7 +80,12 @@ const controlsModel = {
             }
         }, "Reset");
 
-        gui_orbit.add(model.pivot, "distance", 0, 100).name("Distance").listen();
+        const gui_distance = gui_orbit.addFolder("Distance");
+        gui_distance.open();
+        gui_distance.add(model.pivot.distance, "0", 0, 100).name("X").listen();
+        gui_distance.add(model.pivot.distance, "1", 0, 100).name("Y").listen();
+        gui_distance.add(model.pivot.distance, "2", 0, 100).name("Z").listen();
+
         gui_orbit.add(model, "usePivot").name("Enabled").listen().onFinishChange(function () {
             //model.animating[2] = false;
             //model.animations.curve = null;
