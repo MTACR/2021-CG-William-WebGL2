@@ -13,11 +13,7 @@ function computeMatrixPivot(projection, position, rotation, scale, pivot, distan
 
     let p = m4.translation(px, py, pz);
     p = m4.translate(p, 0, 0, 0);
-
-    p = m4.xRotate(p, degToRad(angle[0]));
-    p = m4.yRotate(p, degToRad(angle[1]));
-    p = m4.zRotate(p, degToRad(angle[2]));
-
+    p = m4.multiply(p, computeRotation(angle));
     p = m4.translate(p, -px, -py, -pz);
 
     position[0] = p[12];
@@ -26,18 +22,6 @@ function computeMatrixPivot(projection, position, rotation, scale, pivot, distan
 
     return m4.scale(m4.multiply(projection, m4.multiply(p, computeRotation(rotation))), scale[0], scale[1], scale[2]);
 }
-
-/*function computeMatrixPivot(projection, position, rotation, scale, pivot, distance, angle) {
-    const t = m4.translate(computeRotation(angle), pivot[0], pivot[1], pivot[2]);
-    const p = m4.translate(t, distance[0], distance[1], distance[2]);
-    const m = m4.multiply(projection, m4.multiply(p, computeRotation(rotation)));
-
-    position[0] = p[12];
-    position[1] = p[13];
-    position[2] = p[14];
-
-    return m4.scale(m, scale[0], scale[1], scale[2]);
-}*/
 
 function computeRotation(rotation) {
     const rx = m4.xRotation(degToRad(rotation[0]));
@@ -49,30 +33,65 @@ function computeRotation(rotation) {
 function computeCamera() {
     let screen;
 
-    if (camera.target != null) {
-        let lookAt = camera.target.position;
-        screen = m4.lookAt(camera.position, lookAt, camera.up);
+    if (camera.usePivot) {
+        const px = camera.pivot.position[0];
+        const py = camera.pivot.position[1];
+        const pz = camera.pivot.position[2];
 
-        let x = lookAt[0] - camera.position[0];
-        let y = lookAt[1] - camera.position[1];
-        let z = lookAt[2] - camera.position[2];
+        let screen = m4.translation(px, py, pz);
+        screen = m4.translate(screen, 0, 0, 0);
+        screen = m4.multiply(screen, computeRotation(camera.pivot.rotation));
+        screen = m4.translate(screen, -px, -py, -pz);
 
-        let xx = Math.atan2(y, z);
-        let yy = Math.atan2(x * Math.cos(xx), z);
-        let zz = Math.atan2(Math.cos(xx), Math.sin(xx) * Math.sin(yy));
+        camera.position[0] = screen[12];
+        camera.position[1] = screen[13];
+        camera.position[2] = screen[14];
 
-        camera.rotation[0] = 180 - radToDeg(xx);
-        camera.rotation[1] = 180 - radToDeg(yy);
-        camera.rotation[2] = 270 - radToDeg(zz);
+        if (camera.target != null) {
+            let lookAt = camera.target.position;
+            screen = m4.lookAt(camera.position, lookAt, camera.up);
+            computeLookAt(lookAt);
+
+        } else {
+            screen = m4.translation(camera.position[0], camera.position[1], camera.position[2]);
+            screen = m4.multiply(screen, computeRotation(camera.rotation));
+        }
+
+        return screen;
 
     } else {
-        screen = m4.translation(camera.position[0], camera.position[1], camera.position[2]);
-        screen = m4.xRotate(screen, degToRad(camera.rotation[0]));
-        screen = m4.yRotate(screen, degToRad(camera.rotation[1]));
-        screen = m4.zRotate(screen, degToRad(camera.rotation[2]));
+        if (camera.target != null) {
+            let lookAt = camera.target.position;
+            screen = m4.lookAt(camera.position, lookAt, camera.up);
+            computeLookAt(lookAt);
+
+        } else {
+            screen = m4.translation(camera.position[0], camera.position[1], camera.position[2]);
+            screen = m4.multiply(screen, computeRotation(camera.rotation));
+        }
     }
 
     return screen;
+}
+
+function computeLookAt(lookAt) {
+    let x = lookAt[0] - camera.position[0];
+    let y = lookAt[1] - camera.position[1];
+    let z = lookAt[2] - camera.position[2];
+
+    let xx = Math.atan2(y, z);
+    let yy = Math.atan2(x * Math.cos(xx), z);
+    let zz = Math.atan2(Math.cos(xx), Math.sin(xx) * Math.sin(yy));
+
+    if (camera.position[2] > 0) {
+        camera.rotation[0] = 180 - radToDeg(xx);
+        camera.rotation[1] = 180 - radToDeg(yy);
+        camera.rotation[2] = 270 - radToDeg(zz);
+    } else {
+        camera.rotation[0] = (180 - radToDeg(xx));
+        camera.rotation[1] = -radToDeg(yy);
+        camera.rotation[2] = 90 + radToDeg(zz);
+    }
 }
 
 function lerp(s, f, t) {

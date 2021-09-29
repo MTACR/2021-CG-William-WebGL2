@@ -1,8 +1,8 @@
 function Model(gl, meshProgramInfo, s) {
 
     this.buffer = s === 0 ? flattenedPrimitives.createCubeBufferInfo(gl, 20)
-                : s === 1 ? flattenedPrimitives.createTruncatedConeBufferInfo(gl, 10, 0, 20, 12, 1, true, false)
-                : s === 2 ? flattenedPrimitives.createSphereBufferInfo(gl, 10, 12, 6) : null;
+        : s === 1 ? flattenedPrimitives.createTruncatedConeBufferInfo(gl, 10, 0, 20, 12, 1, true, false)
+            : s === 2 ? flattenedPrimitives.createSphereBufferInfo(gl, 10, 12, 6) : null;
 
     this.VAO = twgl.createVAOFromBufferInfo(gl, meshProgramInfo, this.buffer);
 
@@ -73,28 +73,7 @@ const controlsModel = {
             }
         }, "Reset");
         const gui_curve = gui_position.addFolder("Curve");
-        model.gui = gui_curve.add(model, "curve", controlsCurve.Curves()).name("Curve").listen();/*.onFinishChange(function () {
-            if (model.animate) {
-                model.curve = "";
-                return;
-            }
-
-            if (model.curve == "") {
-                model.animations.curve = null;
-                model.animating[2] = false;
-            } else {
-                const curve = curves[curves.findIndex(x => x.id == model.curve)];
-
-                if (curve === undefined)
-                    return;
-
-                const p = getPointOnBezierCurve(curve.pts, model.curveT >= 0 ? model.curveT : 1 + model.curveT);
-
-                model.position[0] = p[0];
-                model.position[1] = p[1];
-                model.position[2] = p[2];
-            }
-        });*/
+        model.gui = gui_curve.add(model, "curve", controlsCurve.Curves()).name("Curve").listen();
 
         gui_curve.add(model, "curveT", -1, 1, 0.01).name("Curve T").listen().onChange(function () {
             if (model.curve != null) {
@@ -213,6 +192,7 @@ const controlsModel = {
 
             animationsModel.Rotate(model);
         });
+
         gui_anim.add(model.animating, "1").name("Color").listen().onFinishChange(function () {
             if (model.animate) {
                 model.animating[1] = false;
@@ -221,6 +201,7 @@ const controlsModel = {
 
             animationsModel.Color(model);
         });
+
         gui_anim.add(model.animating, "2").name("Curve").listen().onChange(function () {
             if (model.animate) {
                 model.animating[2] = false;
@@ -241,6 +222,7 @@ const controlsModel = {
                 animationsModel.Curve(model);
             }
         });
+
         gui_anim.add(model.animating, "3").name("Orbit").listen().onFinishChange(function () {
             if (model.animate) {
                 model.animating[3] = false;

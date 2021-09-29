@@ -1,28 +1,44 @@
-class Camera {
-    position = [0, 0, 200];
-    rotation = [0, 0, 0];
-    target = null;
-    up = [0, 1, 0];
-    FOV = 60;
-    active = true;
-    curve = "";
-    gui = null;
-    curveT = 0;
-    speed = 1;
-    animate = false;
-    animationList = [];
-    animating = [false, false, false, false];
-    animations = {
+function Camera(gl, meshProgramInfo) {
+    this.position = [0, 0, 200];
+    this.rotation = [0, 0, 0];
+    this.target = null;
+    this.up = [0, 1, 0];
+    this.FOV = 60;
+    this.active = true;
+    this.curve = "";
+    this.gui = null;
+    this.curveT = 0;
+    this.speed = 1;
+    this.animate = false;
+    this.usePivot = false;
+    this.animationList = [];
+    this.animating = [false, false, false, false];
+    this.animations = {
         //rotate: null,
         curve: null,
         //color: null,
-        //orbit: null
+        orbit: null
     };
+
+    this.pivot = {
+        position: [0, 0, 200],
+        rotation: [0, 0, 0],
+        distance: 0,
+        buffer: null,
+        VAO: null,
+        uniforms: {
+            u_colorMult: [0, 0, 1, 1],
+            u_matrix: m4.identity()
+        }
+    };
+
+    this.pivot.buffer = flattenedPrimitives.createSphereBufferInfo(gl, 6, 10, 10);
+    this.pivot.VAO = twgl.createVAOFromBufferInfo(gl, meshProgramInfo, this.pivot.buffer);
 }
 
 const controlsCamera = {
-    New: function () {
-        const cam = new Camera();
+    New: function (gl, meshProgramInfo) {
+        const cam = new Camera(gl, meshProgramInfo);
         cam.id = camerasCounter++;
         cams.forEach(function (c) {
             c.active = false;
@@ -54,28 +70,7 @@ const controlsCamera = {
 
         const gui_curve = gui_position.addFolder("Curve");
 
-        cam.gui = gui_curve.add(cam, "curve", controlsCurve.Curves()).name("Curve").listen();/*.onFinishChange(function () {
-            if (cam.animate) {
-                cam.curve = "";
-                return;
-            }
-
-            if (cam.curve == "") {
-                //cam.animations.curve = null;
-                //cam.animating[2] = false;
-            } else {
-                const curve = curves[curves.findIndex(x => x.id == cam.curve)];
-
-                if (curve === undefined)
-                    return;
-
-                const p = getPointOnBezierCurve(curve.pts, cam.curveT >= 0 ? cam.curveT : 1 + cam.curveT);
-
-                cam.position[0] = p[0];
-                cam.position[1] = p[1];
-                cam.position[2] = p[2];
-            }
-        });*/
+        cam.gui = gui_curve.add(cam, "curve", controlsCurve.Curves()).name("Curve").listen();
 
         gui_curve.add(cam, "curveT", -1, 1, 0.01).name("Curve T").listen().onChange(function () {
             if (cam.curve != null) {
@@ -89,6 +84,58 @@ const controlsCamera = {
                 cam.position[0] = p[0];
                 cam.position[1] = p[1];
                 cam.position[2] = p[2];
+            }
+        });
+
+        const gui_orbit = gui_position.addFolder("Orbit");
+        const gui_pivot_p = gui_orbit.addFolder("Pivot");
+        gui_pivot_p.open();
+        gui_pivot_p.add(cam.pivot.position, "0", -500, 500).name("X").listen();
+        gui_pivot_p.add(cam.pivot.position, "1", -500, 500).name("Y").listen();
+        gui_pivot_p.add(cam.pivot.position, "2", -500, 500).name("Z").listen();
+        gui_pivot_p.add({
+            Reset: function () {
+                cam.pivot.position[0] = 0;
+                cam.pivot.position[1] = 0;
+                cam.pivot.position[2] = 0;
+            }
+        }, "Reset");
+        const gui_pivot_r = gui_orbit.addFolder("Angle");
+        gui_pivot_r.open();
+        gui_pivot_r.add(cam.pivot.rotation, "0", -500, 500).name("X").listen();
+        gui_pivot_r.add(cam.pivot.rotation, "1", -500, 500).name("Y").listen();
+        gui_pivot_r.add(cam.pivot.rotation, "2", -500, 500).name("Z").listen();
+        gui_pivot_r.add({
+            Reset: function () {
+                cam.pivot.rotation[0] = 0;
+                cam.pivot.rotation[1] = 0;
+                cam.pivot.rotation[2] = 0;
+            }
+        }, "Reset");
+
+        //gui_orbit.add(model.pivot, "distance", 0, 100, 1);
+
+        /*const gui_distance = gui_orbit.addFolder("Distance");
+        gui_distance.open();
+        gui_distance.add(model.pivot.distance, "0", 0, 100).name("X").listen();
+        gui_distance.add(model.pivot.distance, "1", 0, 100).name("Y").listen();
+        gui_distance.add(model.pivot.distance, "2", 0, 100).name("Z").listen();*/
+
+        gui_orbit.add(cam, "usePivot").name("Enabled").listen().onFinishChange(function () {
+            //model.animating[2] = false;
+            //model.animations.curve = null;
+            if (cam.animate) {
+                cam.usePivot = false;
+                return;
+            }
+
+            if (cam.animating[2] && !cam.animating[3]) {
+                cam.usePivot = false;
+            }
+
+            if (!cam.usePivot && cam.animating[3]) {
+                cam.animating[3] = false;
+                cam.animations.orbit = null;
             }
         });
 
@@ -122,6 +169,18 @@ const controlsCamera = {
                 //model.animations.orbit = null;
                 animationsModel.Curve(cam);
             }
+        });
+
+        gui_anim.add(cam.animating, "3").name("Orbit").listen().onFinishChange(function () {
+            if (cam.animate) {
+                cam.animating[3] = false;
+                return;
+            }
+
+            cam.usePivot = !(cam.animating[2] && !cam.animating[3]);
+            //model.animating[2] = false;
+            //model.animations.curve = null;
+            animationsModel.Orbit(cam);
         });
 
         gui_anim.add(cam, "speed", -10, 10).name("Speed");
@@ -247,6 +306,13 @@ const controlsCamera = {
 
         gui_root.add({
             Start: function () {
+                cam.animations.curve = null;
+                cam.animations.orbit = null;
+                cam.animating[0] = false;
+                cam.animating[1] = false;
+                cam.animating[2] = false;
+                cam.animating[3] = false;
+                cam.usePivot = false;
                 cam.curve = "";
                 cam.animate = true;
 
