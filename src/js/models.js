@@ -311,8 +311,8 @@ const controlsModel = {
                             break
                     }
                 });
-                gui_tr.add(a, "start", 0, 30).name("Starts in").listen();
-                gui_tr.add(a, "duration", 0, 30).name("Duration").listen();
+                gui_tr.add(a, "start", 0, 30, 0.1).name("Starts in").listen();
+                gui_tr.add(a, "duration", 0, 30, 0.1).name("Duration").listen();
 
                 gui_tr.add({
                     "Remove": function () {
@@ -349,8 +349,8 @@ const controlsModel = {
                             break
                     }
                 });
-                gui_tr.add(a, "start", 0, 30).name("Starts in").listen();
-                gui_tr.add(a, "duration", 0, 30).name("Duration").listen();
+                gui_tr.add(a, "start", 0, 30, 0.1).name("Starts in").listen();
+                gui_tr.add(a, "duration", 0, 30, 0.1).name("Duration").listen();
 
                 gui_tr.add({
                     "Remove": function () {
@@ -387,8 +387,8 @@ const controlsModel = {
                             break
                     }
                 });
-                gui_tr.add(a, "start", 0, 30).name("Starts in").listen();
-                gui_tr.add(a, "duration", 0, 30).name("Duration").listen();
+                gui_tr.add(a, "start", 0, 30, 0.1).name("Starts in").listen();
+                gui_tr.add(a, "duration", 0, 30, 0.1).name("Duration").listen();
 
                 gui_tr.add({
                     "Remove": function () {
@@ -425,8 +425,8 @@ const controlsModel = {
                             break
                     }
                 });
-                gui_tr.add(a, "start", 0, 30).name("Starts in").listen();
-                gui_tr.add(a, "duration", 0, 30).name("Duration").listen();
+                gui_tr.add(a, "start", 0, 30, 0.1).name("Starts in").listen();
+                gui_tr.add(a, "duration", 0, 30, 0.1).name("Duration").listen();
 
                 gui_tr.add({
                     "Remove": function () {

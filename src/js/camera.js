@@ -254,8 +254,8 @@ const controlsCamera = {
                             break
                     }
                 });
-                gui_tr.add(a, "start", 0, 30).name("Starts in").listen();
-                gui_tr.add(a, "duration", 0, 30).name("Duration").listen();
+                gui_tr.add(a, "start", 0, 30, 0.1).name("Starts in").listen();
+                gui_tr.add(a, "duration", 0, 30, 0.1).name("Duration").listen();
 
                 gui_tr.add({
                     "Remove": function () {
@@ -292,8 +292,8 @@ const controlsCamera = {
                             break
                     }
                 });
-                gui_tr.add(a, "start", 0, 30).name("Starts in").listen();
-                gui_tr.add(a, "duration", 0, 30).name("Duration").listen();
+                gui_tr.add(a, "start", 0, 30, 0.1).name("Starts in").listen();
+                gui_tr.add(a, "duration", 0, 30, 0.1).name("Duration").listen();
 
                 gui_tr.add({
                     "Remove": function () {
@@ -303,6 +303,31 @@ const controlsCamera = {
                 }, "Remove");
             }
         }, "Add Rotation");
+
+        gui_root.add({
+            "Add Zoom": function () {
+
+                const a = new Animation();
+                a.animation = animationCustom.Zoom;
+                a.id = animationsCounter++;
+                cam.animationList.push(a);
+
+                const gui_tr = gui_anims.addFolder("Zoom (" + a.id + ")");
+                gui_tr.open();
+
+                gui_tr.add(a.args, "start", 1, 179).name("Initial FOV").listen();
+                gui_tr.add(a.args, "end", 1, 179).name("Final FOV").listen();
+                gui_tr.add(a, "start", 0, 30, 0.1).name("Starts in").listen();
+                gui_tr.add(a, "duration", 0, 30, 0.1).name("Duration").listen();
+
+                gui_tr.add({
+                    "Remove": function () {
+                        gui_anims.removeFolder(gui_tr);
+                        cam.animationList.splice(cam.animationList.findIndex(x => x.id == a.id))
+                    }
+                }, "Remove");
+            }
+        }, "Add Zoom");
 
         gui_root.add({
             Start: function () {

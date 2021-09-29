@@ -72,7 +72,6 @@ function Animation() {
     this.animation = null;
     this.finishT = 0;
     this.startT = 0;
-    this.isPlaying = false;
     this.args = {
         axisStr: "X",
         start: 0,
@@ -82,12 +81,12 @@ function Animation() {
 }
 
 const animationCustom = {
-    Translate: function (model, args, t) {
-        model.position[args.axis] = lerp(args.start, args.end, t);
+    Translate: function (obj, args, t) {
+        obj.position[args.axis] = lerp(args.start, args.end, t);
     },
 
-    Rotate: function (model, args, t) {
-        model.rotation[args.axis] = lerp(args.start, args.end, t);
+    Rotate: function (obj, args, t) {
+        obj.rotation[args.axis] = lerp(args.start, args.end, t);
     },
 
     Scale: function (model, args, t) {
@@ -96,6 +95,10 @@ const animationCustom = {
 
     Color: function (model, args, t) {
         model.uniforms.u_colorMult[args.axis] = lerp(args.start, args.end, t);
+    },
+
+    Zoom: function (cam, args, t) {
+        cam.FOV = lerp(args.start, args.end, t);
     }
 }
 
