@@ -23,7 +23,7 @@ function Camera(gl, meshProgramInfo) {
     this.pivot = {
         position: [0, 0, 200],
         rotation: [0, 0, 0],
-        distance: 0,
+        distance: [0, 0, 0],
         buffer: null,
         VAO: null,
         uniforms: {
@@ -115,11 +115,11 @@ const controlsCamera = {
 
         //gui_orbit.add(model.pivot, "distance", 0, 100, 1);
 
-        /*const gui_distance = gui_orbit.addFolder("Distance");
+        const gui_distance = gui_orbit.addFolder("Distance");
         gui_distance.open();
-        gui_distance.add(model.pivot.distance, "0", 0, 100).name("X").listen();
-        gui_distance.add(model.pivot.distance, "1", 0, 100).name("Y").listen();
-        gui_distance.add(model.pivot.distance, "2", 0, 100).name("Z").listen();*/
+        gui_distance.add(cam.pivot.distance, "0", 0, 100).name("X").listen();
+        gui_distance.add(cam.pivot.distance, "1", 0, 100).name("Y").listen();
+        gui_distance.add(cam.pivot.distance, "2", 0, 100).name("Z").listen();
 
         gui_orbit.add(cam, "usePivot").name("Enabled").listen().onFinishChange(function () {
             //model.animating[2] = false;

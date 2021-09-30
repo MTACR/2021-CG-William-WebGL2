@@ -37,7 +37,7 @@ function Model(gl, meshProgramInfo, s) {
     this.pivot = {
         position: [0, 0, 0],
         rotation: [0, 0, 0],
-        distance: 0,
+        distance: [0, 0, 0],
         buffer: null,
         VAO: null,
         uniforms: {
@@ -118,11 +118,11 @@ const controlsModel = {
 
         //gui_orbit.add(model.pivot, "distance", 0, 100, 1);
 
-        /*const gui_distance = gui_orbit.addFolder("Distance");
+        const gui_distance = gui_orbit.addFolder("Distance");
         gui_distance.open();
         gui_distance.add(model.pivot.distance, "0", 0, 100).name("X").listen();
         gui_distance.add(model.pivot.distance, "1", 0, 100).name("Y").listen();
-        gui_distance.add(model.pivot.distance, "2", 0, 100).name("Z").listen();*/
+        gui_distance.add(model.pivot.distance, "2", 0, 100).name("Z").listen();
 
         gui_orbit.add(model, "usePivot").name("Enabled").listen().onFinishChange(function () {
             //model.animating[2] = false;

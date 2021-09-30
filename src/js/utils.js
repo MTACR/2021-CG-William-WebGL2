@@ -2,73 +2,66 @@ const degToRad = (d) => (d * Math.PI) / 180;
 const radToDeg = (r) => (r * 180) / Math.PI;
 
 function computeMatrix(projection, position, rotation, scale) {
-    const t = m4.translate(projection, position[0], position[1], position[2]);
-    return m4.scale(m4.multiply(t, computeRotation(rotation)), scale[0], scale[1], scale[2]);
+    const t = translateMatrix(projection, position);
+    const r = rotateMatrix(t, rotation);
+    return scaleMatrix(r, scale);
 }
 
 function computeMatrixPivot(projection, position, rotation, scale, pivot, distance, angle) {
-    const px = pivot[0];
-    const py = pivot[1];
-    const pz = pivot[2];
-
-    let p = m4.translation(px, py, pz);
-    p = m4.translate(p, 0, 0, 0);
-    p = m4.multiply(p, computeRotation(angle));
-    p = m4.translate(p, -px, -py, -pz);
+    let p = translationMatrix(pivot);
+    p = rotateMatrix(p, angle);
+    p = translateMatrix(p, distance);
 
     position[0] = p[12];
     position[1] = p[13];
     position[2] = p[14];
 
-    return m4.scale(m4.multiply(projection, m4.multiply(p, computeRotation(rotation))), scale[0], scale[1], scale[2]);
+    const r = rotateMatrix(p, rotation);
+    const s = m4.multiply(projection, r);
+    return scaleMatrix(s, scale);
 }
 
-function computeRotation(rotation) {
-    const rx = m4.xRotation(degToRad(rotation[0]));
-    const ry = m4.yRotation(degToRad(rotation[1]));
-    const rz = m4.zRotation(degToRad(rotation[2]));
-    return m4.multiply(rx, m4.multiply(ry, rz));
+function computeModel(model, projection) {
+    if (model.usePivot) {
+        return computeMatrixPivot(
+            projection,
+            model.position,
+            model.rotation,
+            model.scale,
+            model.pivot.position,
+            model.pivot.distance,
+            model.pivot.rotation
+        );
+    } else {
+        return computeMatrix(
+            projection,
+            model.position,
+            model.rotation,
+            model.scale
+        );
+    }
 }
 
 function computeCamera() {
     let screen;
 
     if (camera.usePivot) {
-        const px = camera.pivot.position[0];
-        const py = camera.pivot.position[1];
-        const pz = camera.pivot.position[2];
-
-        let screen = m4.translation(px, py, pz);
-        screen = m4.translate(screen, 0, 0, 0);
-        screen = m4.multiply(screen, computeRotation(camera.pivot.rotation));
-        screen = m4.translate(screen, -px, -py, -pz);
+        screen = translationMatrix(camera.pivot.position);
+        screen = rotateMatrix(screen, camera.pivot.rotation);
+        screen = translateMatrix(screen, camera.pivot.distance);
 
         camera.position[0] = screen[12];
         camera.position[1] = screen[13];
         camera.position[2] = screen[14];
+    }
 
-        if (camera.target != null) {
-            let lookAt = camera.target.position;
-            screen = m4.lookAt(camera.position, lookAt, camera.up);
-            computeLookAt(lookAt);
-
-        } else {
-            screen = m4.translation(camera.position[0], camera.position[1], camera.position[2]);
-            screen = m4.multiply(screen, computeRotation(camera.rotation));
-        }
-
-        return screen;
-
+    if (camera.target != null) {
+        let lookAt = camera.target.position;
+        screen = m4.lookAt(camera.position, lookAt, camera.up);
+        computeLookAt(lookAt);
     } else {
-        if (camera.target != null) {
-            let lookAt = camera.target.position;
-            screen = m4.lookAt(camera.position, lookAt, camera.up);
-            computeLookAt(lookAt);
-
-        } else {
-            screen = m4.translation(camera.position[0], camera.position[1], camera.position[2]);
-            screen = m4.multiply(screen, computeRotation(camera.rotation));
-        }
+        screen = translationMatrix(camera.position);
+        screen = rotateMatrix(screen, camera.rotation);
     }
 
     return screen;
@@ -94,6 +87,26 @@ function computeLookAt(lookAt) {
     }
 }
 
+function rotateMatrix(m, rotation) {
+    const rx = m4.xRotation(degToRad(rotation[0]));
+    const ry = m4.yRotation(degToRad(rotation[1]));
+    const rz = m4.zRotation(degToRad(rotation[2]));
+    const r = m4.multiply(rx, m4.multiply(ry, rz));
+    return m4.multiply(m, r);
+}
+
+function translateMatrix(m, position) {
+    return m4.translate(m, position[0], position[1], position[2]);
+}
+
+function scaleMatrix(m, scale) {
+    return m4.scale(m, scale[0], scale[1], scale[2]);
+}
+
+function translationMatrix(position) {
+    return  m4.translation(position[0], position[1], position[2]);
+}
+
 function lerp(s, f, t) {
     return s + (f - s) * t;
 }
@@ -105,16 +118,6 @@ const v2 = {
             n[0] += p[0];
             n[1] += p[1];
             n[2] += p[2];
-        });
-        return n;
-    },
-
-    sub: function (a, ...args) {
-        const n = a.slice();
-        [...args].forEach(p => {
-            n[0] -= p[0];
-            n[1] -= p[1];
-            n[2] -= p[2];
         });
         return n;
     },
@@ -134,54 +137,5 @@ const v2 = {
         } else {
             return [a[0] * s, a[1] * s, a[2] * s];
         }
-    },
-
-    /*lerp: function (a, b, t) {
-        return [
-            a[0] + (b[0] - a[0]) * t,
-            a[1] + (b[1] - a[1]) * t,
-            a[2] + (b[2] - a[2]) * t
-        ];
     }
-
-    function min(a, b) {
-        return [
-            Math.min(a[0], b[0]),
-            Math.min(a[1], b[1]),
-            Math.min(a[2], b[2]),
-        ];
-    }
-
-    function max(a, b) {
-        return [
-            Math.max(a[0], b[0]),
-            Math.max(a[1], b[1]),
-            Math.max(a[2], b[2]),
-        ];
-    }
-
-    function distanceSq(a, b) {
-        const dx = a[0] - b[0];
-        const dy = a[1] - b[1];
-        const dz = a[2] - b[2]
-        return dx * dx + dy * dy + dz * dz;
-    }
-
-    function distance(a, b) {
-        return Math.sqrt(distanceSq(a, b));
-    }
-
-    function distanceToSegmentSq(p, v, w) {
-        const l2 = distanceSq(v, w);
-        if (l2 === 0) {
-            return distanceSq(p, v);
-        }
-        let t = ((p[0] - v[0]) * (w[0] - v[0]) + (p[1] - v[1]) * (w[1] - v[1])) / l2;
-        t = Math.max(0, Math.min(1, t));
-        return distanceSq(p, lerp(v, w, t));
-    }
-
-    function distanceToSegment(p, v, w) {
-        return Math.sqrt(distanceToSegmentSq(p, v, w));
-    }*/
 }

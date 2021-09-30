@@ -67,24 +67,7 @@ function main() {
 
             gl.bindVertexArray(model.VAO);
 
-            if (model.usePivot) {
-                model.uniforms.u_matrix = computeMatrixPivot(
-                    projection,
-                    model.position,
-                    model.rotation,
-                    model.scale,
-                    model.pivot.position,
-                    model.pivot.distance,
-                    model.pivot.rotation
-                );
-            } else {
-                model.uniforms.u_matrix = computeMatrix(
-                    projection,
-                    model.position,
-                    model.rotation,
-                    model.scale
-                );
-            }
+            model.uniforms.u_matrix = computeModel(model, projection);
 
             twgl.setUniforms(meshProgramInfo, model.uniforms);
             twgl.drawBufferInfo(gl, model.buffer);
