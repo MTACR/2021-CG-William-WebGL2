@@ -14,7 +14,7 @@ function Curve(gl, meshProgramInfo) {
 class Point {
 
     constructor(gl, meshProgramInfo, position, original) {
-        this.buffer = flattenedPrimitives.createSphereBufferInfo(gl, original? 6 : 2, 10, 10);
+        this.buffer = flattenedPrimitives.createSphereBufferInfo(gl, original ? 6 : 2, 10, 10);
         this.VAO = twgl.createVAOFromBufferInfo(gl, meshProgramInfo, this.buffer);
         this.position = position;
 
@@ -44,13 +44,12 @@ function getPointOnBezierCurve(points, t) {
         v2.mult(points[3], t * t * t));
 }
 
-function getPointsOnBezierCurve(points, numPoints) {
-    const cpoints = [];
-    for (let i = 0; i < numPoints; ++i) {
-        const t = i / (numPoints - 1);
-        cpoints.push(getPointOnBezierCurve(points, t));
+function getPointsOnBezierCurve(points) {
+    const pts = [];
+    for (let i = 0; i < 50; ++i) {
+        pts.push(getPointOnBezierCurve(points, i / (50 - 1)));
     }
-    return cpoints;
+    return pts;
 }
 
 const controlsCurve = {
@@ -75,7 +74,7 @@ const controlsCurve = {
             gui_p.add(point.position, "2", -500, 500).onChange(function () {
                 controlsCurve.Update(curve, gl, meshProgramInfo);
             }).name("Z");
-        })
+        });
 
         gui_root.add({
             Remove: function () {
@@ -105,7 +104,7 @@ const controlsCurve = {
             curve.pts.push(p.position);
         });
 
-        getPointsOnBezierCurve(curve.pts, 50).forEach(function (p) {
+        getPointsOnBezierCurve(curve.pts, curve.n).forEach(function (p) {
             curve.interpolation.push(new Point(gl, meshProgramInfo, p, false));
         });
     },
@@ -121,10 +120,6 @@ const controlsCurve = {
                     model.animations.curve = null;
                     model.animating[2] = false;
                 } else {
-                    //model.animating[3] = false;
-                    //model.usePivot = false;
-                    //model.animations.orbit = null;
-
                     const curve = curves[curves.findIndex(x => x.id == model.curve)];
 
                     if (curve === undefined)
@@ -153,10 +148,7 @@ const controlsCurve = {
                     return;
                 }
 
-                if (cam.curve == "") {
-                    //cam.animations.curve = null;
-                    //cam.animating[2] = false;
-                } else {
+                if (cam.curve != "") {
                     const curve = curves[curves.findIndex(x => x.id == cam.curve)];
 
                     if (curve === undefined)

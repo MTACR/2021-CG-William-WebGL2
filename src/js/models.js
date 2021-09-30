@@ -116,8 +116,6 @@ const controlsModel = {
             }
         }, "Reset");
 
-        //gui_orbit.add(model.pivot, "distance", 0, 100, 1);
-
         const gui_distance = gui_orbit.addFolder("Distance");
         gui_distance.open();
         gui_distance.add(model.pivot.distance, "0", 0, 100).name("X").listen();
@@ -125,8 +123,6 @@ const controlsModel = {
         gui_distance.add(model.pivot.distance, "2", 0, 100).name("Z").listen();
 
         gui_orbit.add(model, "usePivot").name("Enabled").listen().onFinishChange(function () {
-            //model.animating[2] = false;
-            //model.animations.curve = null;
             if (model.animate) {
                 model.usePivot = false;
                 return;
@@ -143,7 +139,7 @@ const controlsModel = {
         });
 
         const gui_rotation = gui_root.addFolder("Rotation");
-        //gui_rotation.open();
+        gui_rotation.open();
         gui_rotation.add(model.rotation, "0", -360, 360).name("X").listen();
         gui_rotation.add(model.rotation, "1", -360, 360).name("Y").listen();
         gui_rotation.add(model.rotation, "2", -360, 360).name("Z").listen();
@@ -216,9 +212,6 @@ const controlsModel = {
                 model.animating[2] = false;
                 model.animations.curve = null;
             } else {
-                //model.animating[3] = false;
-                //model.usePivot = false;
-                //model.animations.orbit = null;
                 animationsModel.Curve(model);
             }
         });
@@ -230,8 +223,6 @@ const controlsModel = {
             }
 
             model.usePivot = !(model.animating[2] && !model.animating[3]);
-            //model.animating[2] = false;
-            //model.animations.curve = null;
             animationsModel.Orbit(model);
         });
 
@@ -478,10 +469,5 @@ const controlsModel = {
             }
         }, "Remove");
 
-        /*gui_root.add({
-            Log: function () {
-                console.log(model.animationList);
-            }
-        }, "Log");*/
     }
 };

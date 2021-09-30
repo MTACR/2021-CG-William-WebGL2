@@ -112,15 +112,10 @@ function tickAnimations(obj) {
                 const n = now - animation.startT;
                 const t = n / d;
 
-                //console.log(t);
-
                 animation.animation(obj, animation.args, Math.min(t, 1));
 
                 if (t > 1) {
                     animation.isPlaying = false;
-
-                    const r = t - 1;
-                    console.log(r);
                 }
             }
         });

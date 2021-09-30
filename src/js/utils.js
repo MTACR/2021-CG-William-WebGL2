@@ -77,13 +77,13 @@ function computeLookAt(lookAt) {
     let zz = Math.atan2(Math.cos(xx), Math.sin(xx) * Math.sin(yy));
 
     if (camera.position[2] > 0) {
-        camera.rotation[0] = 180 - radToDeg(xx);
-        camera.rotation[1] = 180 - radToDeg(yy);
-        camera.rotation[2] = 270 - radToDeg(zz);
+        camera.rotation[0] = (180 - radToDeg(xx)) % 360;
+        camera.rotation[1] = (180 - radToDeg(yy)) % 360;
+        camera.rotation[2] = (270 - radToDeg(zz)) % 360;
     } else {
-        camera.rotation[0] = (180 - radToDeg(xx));
-        camera.rotation[1] = -radToDeg(yy);
-        camera.rotation[2] = 90 + radToDeg(zz);
+        camera.rotation[0] = (180 - radToDeg(xx)) % 360;
+        camera.rotation[1] = (-radToDeg(yy))      % 360;
+        camera.rotation[2] = (90 + radToDeg(zz))  % 360;
     }
 }
 

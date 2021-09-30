@@ -113,8 +113,6 @@ const controlsCamera = {
             }
         }, "Reset");
 
-        //gui_orbit.add(model.pivot, "distance", 0, 100, 1);
-
         const gui_distance = gui_orbit.addFolder("Distance");
         gui_distance.open();
         gui_distance.add(cam.pivot.distance, "0", 0, 100).name("X").listen();
@@ -122,8 +120,6 @@ const controlsCamera = {
         gui_distance.add(cam.pivot.distance, "2", 0, 100).name("Z").listen();
 
         gui_orbit.add(cam, "usePivot").name("Enabled").listen().onFinishChange(function () {
-            //model.animating[2] = false;
-            //model.animations.curve = null;
             if (cam.animate) {
                 cam.usePivot = false;
                 return;
@@ -164,9 +160,6 @@ const controlsCamera = {
                 cam.animating[2] = false;
                 cam.animations.curve = null;
             } else {
-                //model.animating[3] = false;
-                //model.usePivot = false;
-                //model.animations.orbit = null;
                 animationsModel.Curve(cam);
             }
         });
@@ -178,8 +171,6 @@ const controlsCamera = {
             }
 
             cam.usePivot = !(cam.animating[2] && !cam.animating[3]);
-            //model.animating[2] = false;
-            //model.animations.curve = null;
             animationsModel.Orbit(cam);
         });
 
@@ -368,10 +359,5 @@ const controlsCamera = {
             }
         }, "Remove");
 
-        /*gui_root.add({
-            Log: function () {
-                console.log(model.animationList);
-            }
-        }, "Log");*/
     }
 }
