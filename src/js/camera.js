@@ -81,9 +81,15 @@ const controlsCamera = {
 
                 const p = getPointOnBezierCurve(curve.pts, cam.curveT >= 0 ? cam.curveT : 1 + cam.curveT);
 
-                cam.position[0] = p[0];
-                cam.position[1] = p[1];
-                cam.position[2] = p[2];
+                if (cam.usePivot) {
+                    cam.pivot.position[0] = p[0];
+                    cam.pivot.position[1] = p[1];
+                    cam.pivot.position[2] = p[2];
+                } else {
+                    cam.position[0] = p[0];
+                    cam.position[1] = p[1];
+                    cam.position[2] = p[2];
+                }
             }
         });
 
@@ -123,10 +129,6 @@ const controlsCamera = {
             if (cam.animate) {
                 cam.usePivot = false;
                 return;
-            }
-
-            if (cam.animating[2] && !cam.animating[3]) {
-                cam.usePivot = false;
             }
 
             if (!cam.usePivot && cam.animating[3]) {
@@ -170,7 +172,10 @@ const controlsCamera = {
                 return;
             }
 
-            cam.usePivot = !(cam.animating[2] && !cam.animating[3]);
+            if (!cam.usePivot && cam.animating[3]) {
+                cam.usePivot = true;
+            }
+
             animationsModel.Orbit(cam);
         });
 

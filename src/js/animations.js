@@ -39,7 +39,7 @@ const animationsModel = {
                 obj.curveT = (obj.curveT + deltaTime * obj.speed * 0.0001) % 1;
                 const p = getPointOnBezierCurve(curve.pts, obj.curveT >= 0 ? obj.curveT : 1 + obj.curveT);
 
-                if (obj.animating[3]) {
+                if (obj.usePivot) {
                     obj.pivot.position[0] = p[0];
                     obj.pivot.position[1] = p[1];
                     obj.pivot.position[2] = p[2];

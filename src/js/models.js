@@ -84,9 +84,15 @@ const controlsModel = {
 
                 const p = getPointOnBezierCurve(curve.pts, model.curveT >= 0 ? model.curveT : 1 + model.curveT);
 
-                model.position[0] = p[0];
-                model.position[1] = p[1];
-                model.position[2] = p[2];
+                if (model.usePivot) {
+                    model.pivot.position[0] = p[0];
+                    model.pivot.position[1] = p[1];
+                    model.pivot.position[2] = p[2];
+                } else {
+                    model.position[0] = p[0];
+                    model.position[1] = p[1];
+                    model.position[2] = p[2];
+                }
             }
         });
 
@@ -126,10 +132,6 @@ const controlsModel = {
             if (model.animate) {
                 model.usePivot = false;
                 return;
-            }
-
-            if (model.animating[2] && !model.animating[3]) {
-                model.usePivot = false;
             }
 
             if (!model.usePivot && model.animating[3]) {
@@ -204,10 +206,6 @@ const controlsModel = {
                 return;
             }
 
-            if (model.animating[2] && !model.animating[3]) {
-                model.usePivot = false;
-            }
-
             if (model.curve == "") {
                 model.animating[2] = false;
                 model.animations.curve = null;
@@ -222,7 +220,10 @@ const controlsModel = {
                 return;
             }
 
-            model.usePivot = !(model.animating[2] && !model.animating[3]);
+            if (!model.usePivot && model.animating[3]) {
+                model.usePivot = true;
+            }
+
             animationsModel.Orbit(model);
         });
 

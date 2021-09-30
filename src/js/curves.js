@@ -1,4 +1,4 @@
-function Curve(gl, meshProgramInfo) {
+function Curve (gl, meshProgramInfo) {
 
     this.points = [
         new Point(gl, meshProgramInfo, [-100, 0, 0], true),
@@ -112,9 +112,9 @@ const controlsCurve = {
     RefreshUI: function () {
         models.forEach(model => {
             model.gui = model.gui.options(controlsCurve.Curves()).name("Curve").listen().onFinishChange(function () {
-                if (model.animating[1] && !model.animating[3]) {
+                /*if (model.animating[1] && !model.animating[3]) {
                     model.usePivot = false;
-                }
+                }*/
 
                 if (model.curve == "") {
                     model.animations.curve = null;
@@ -127,7 +127,7 @@ const controlsCurve = {
 
                     const p = getPointOnBezierCurve(curve.pts, model.curveT >= 0 ? model.curveT : 1 + model.curveT);
 
-                    if (model.animating[3]) {
+                    if (model.usePivot) {
                         model.pivot.position[0] = p[0];
                         model.pivot.position[1] = p[1];
                         model.pivot.position[2] = p[2];
@@ -156,9 +156,15 @@ const controlsCurve = {
 
                     const p = getPointOnBezierCurve(curve.pts, cam.curveT >= 0 ? cam.curveT : 1 + cam.curveT);
 
-                    cam.position[0] = p[0];
-                    cam.position[1] = p[1];
-                    cam.position[2] = p[2];
+                    if (cam.usePivot) {
+                        cam.pivot.position[0] = p[0];
+                        cam.pivot.position[1] = p[1];
+                        cam.pivot.position[2] = p[2];
+                    } else {
+                        cam.position[0] = p[0];
+                        cam.position[1] = p[1];
+                        cam.position[2] = p[2];
+                    }
                 }
             });
             cam.gui.updateDisplay();
